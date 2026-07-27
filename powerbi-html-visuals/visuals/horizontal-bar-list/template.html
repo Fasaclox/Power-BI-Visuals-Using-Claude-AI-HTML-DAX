@@ -1,0 +1,41 @@
+Horizontal Bar List =
+VAR _Total = «MEASURE: overall total used as the % denominator»
+VAR _Val1 = CALCULATE(«MEASURE», «FILTER: category 1»)
+VAR _Val2 = CALCULATE(«MEASURE», «FILTER: category 2»)
+VAR _Val3 = CALCULATE(«MEASURE», «FILTER: category 3»)
+VAR _Val4 = CALCULATE(«MEASURE», «FILTER: category 4»)
+VAR _Val5 = CALCULATE(«MEASURE», «FILTER: category 5»)
+-- Add/remove Val VARs to match the number of categories/rows needed.
+
+VAR _Pct1 = ROUND(DIVIDE(_Val1, _Total, 0) * 100, 1)
+VAR _Pct2 = ROUND(DIVIDE(_Val2, _Total, 0) * 100, 1)
+VAR _Pct3 = ROUND(DIVIDE(_Val3, _Total, 0) * 100, 1)
+VAR _Pct4 = ROUND(DIVIDE(_Val4, _Total, 0) * 100, 1)
+VAR _Pct5 = ROUND(DIVIDE(_Val5, _Total, 0) * 100, 1)
+
+RETURN
+"<style>
+  .sd{font-family:Segoe UI,sans-serif;padding:8px 14px;width:100%;height:100%}
+  .sd-t{font-size:14px;font-weight:800;color:#1a2b4a;margin-bottom:8px}
+  .sd-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .sd-icon{font-size:14px;width:22px;text-align:center;flex-shrink:0}
+  .sd-info{flex:1;min-width:0}
+  .sd-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+  .sd-name{font-size:12px;font-weight:700;color:#1a2b4a}
+  .sd-pct{font-size:12px;font-weight:800;color:#1a2b4a}
+  .sd-track{width:100%;height:9px;background:#e8ecf0;border-radius:5px;overflow:hidden}
+  .sd-fill{height:100%;border-radius:5px}
+  .sd-sub{font-size:12px;color:#8895a7;font-weight:500;margin-top:2px}
+</style>
+<div class='sd'>
+  <div class='sd-t'>«TITLE: e.g. Distribution of Players by Sport»</div>
+  <div class='sd-row'>
+    <div class='sd-icon'>«OPTIONAL EMOJI/ICON for row 1 — delete .sd-icon div entirely if no per-row icon is wanted»</div>
+    <div class='sd-info'>
+      <div class='sd-top'><span class='sd-name'>«CATEGORY 1 NAME»</span><span class='sd-pct'>" & FORMAT(_Pct1, "0.0") & "%</span></div>
+      <div class='sd-track'><div class='sd-fill' style='width:" & _Pct1 & "%;background:«COLOR 1»'></div></div>
+      <div class='sd-sub'>" & FORMAT(_Val1, "#,0") & " of " & FORMAT(_Total, "#,0") & "</div>
+    </div>
+  </div>
+  <!-- Repeat one .sd-row block per additional category, incrementing _ValN/_PctN and picking the next color in the ramp -->
+</div>"

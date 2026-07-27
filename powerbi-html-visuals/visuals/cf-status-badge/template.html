@@ -1,0 +1,45 @@
+CF Status Badge =
+VAR _val = «MEASURE OR COLUMN: the raw value/category to classify, e.g. F_Properties[days_on_market] or F_Properties[listing_type]»
+
+VAR Label =
+    «EXPRESSION: text to display in the badge — either _val directly (for
+    categorical fields like listing_type) or a derived label via SWITCH(TRUE(), ...)
+    for tiered numeric fields (e.g. "Fast"/"Moderate"/"Slow"/"Stale")»
+
+VAR TextColor =
+    SWITCH(TRUE(),
+        «CONDITION 1», "%23067585",
+        «CONDITION 2», "%238a6000",
+        «CONDITION 3», "%23c04040",
+        "%23666666"  -- fallback/default
+    )
+
+VAR BorderColor =
+    SWITCH(TRUE(),
+        «CONDITION 1», "%2352b4bf",
+        «CONDITION 2», "%23f5a623",
+        «CONDITION 3», "%23e07b7b",
+        "%23cccccc"  -- fallback/default
+    )
+
+VAR BgColor =
+    SWITCH(TRUE(),
+        «CONDITION 1», "%23e8f7f8",
+        «CONDITION 2», "%23fffbf0",
+        «CONDITION 3», "%23fff5f5",
+        "%23f5f5f5"  -- fallback/default
+    )
+
+-- Fixed width: use this for short, known-length categories (2-3 fixed options).
+VAR BadgeWidth = "48"
+
+-- Dynamic width: use this instead if Label length varies a lot across rows
+-- (e.g. free-text categories, IDs). Delete whichever VAR you don't use.
+VAR BadgeWidthDynamic = MAX(48, LEN(Label) * 7 + 20)
+
+RETURN
+"data:image/svg+xml;utf8," &
+"<svg xmlns='http://www.w3.org/2000/svg' width='" & BadgeWidth & "' height='22'>" &
+    "<rect x='1' y='1' width='" & (VALUE(BadgeWidth) - 2) & "' height='20' rx='4' fill='" & BgColor & "' stroke='" & BorderColor & "' stroke-width='1.5'/>" &
+    "<text x='" & DIVIDE(VALUE(BadgeWidth), 2) & "' y='15' font-family='Segoe UI,sans-serif' font-size='9.5' font-weight='700' fill='" & TextColor & "' text-anchor='middle' letter-spacing='0.3'>" & Label & "</text>" &
+"</svg>"

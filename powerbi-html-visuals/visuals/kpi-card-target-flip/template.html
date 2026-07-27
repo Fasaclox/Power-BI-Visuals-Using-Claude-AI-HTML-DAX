@@ -1,0 +1,118 @@
+KPI Card — Revenue vs Target (Flip Effect) =
+
+VAR _rev = «MEASURE: current period total, numeric, not pre-formatted»
+VAR _target = «MEASURE: target value for the same period, numeric»
+VAR _attain = «MEASURE: _rev / _target as a decimal (e.g. 0.82), numeric»
+VAR _gap = «MEASURE: _target - _rev, numeric (can be negative if over target)»
+
+VAR _revWhole = FORMAT(INT(_rev), "$#,##0")
+VAR _revDec = "." & FORMAT((_rev - INT(_rev)) * 100, "00")
+
+VAR _targetFmt =
+    IF(_target >= 1000000000,
+        FORMAT(_target / 1000000000, "$#,0.0") & "B",
+    IF(_target >= 1000000,
+        FORMAT(_target / 1000000, "$#,0.0") & "M",
+    IF(_target >= 1000,
+        FORMAT(_target / 1000, "$#,0") & "K",
+        FORMAT(_target, "$#,0")
+    )))
+
+VAR _attainPct = FORMAT(_attain * 100, "0.0")
+VAR _attainBarVal = MAX(MIN(_attain * 100, 100), 6)
+
+VAR _gapFmt =
+    IF(ABS(_gap) >= 1000000000,
+        FORMAT(ABS(_gap) / 1000000000, "$#,0.00") & "B",
+    IF(ABS(_gap) >= 1000000,
+        FORMAT(ABS(_gap) / 1000000, "$#,0.00") & "M",
+    IF(ABS(_gap) >= 1000,
+        FORMAT(ABS(_gap) / 1000, "$#,0.0") & "K",
+        FORMAT(ABS(_gap), "$#,0.00")
+    )))
+
+VAR _gapLabel = IF(_gap > 0, "Left to target", "Exceeded by")
+
+VAR _tierClass =
+    IF(_attain >= 1, "t-green",
+    IF(_attain >= 0.7, "t-blue",
+    IF(_attain >= 0.4, "t-orange", "t-red")))
+
+VAR _barPx = ROUND(_attainBarVal / 100 * 370, 0)
+VAR _iconChar = IF(_attain >= 1, "&#10004;", "&#9678;")
+
+RETURN
+"<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,sans-serif}
+.kc{position:relative;width:420px;height:280px;border-radius:16px;cursor:default;perspective:1200px}
+.flipper{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform 0.55s ease}
+.kc:hover .flipper{transform:rotateY(180deg)}
+.front,.back{position:absolute;inset:0;padding:24px 28px;display:flex;flex-direction:column;justify-content:space-between;border-radius:16px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.front{background:#FFFFFF;border:1px solid #E0E0E0;transform:rotateY(0deg)}
+.back{background:#1e2d3d;transform:rotateY(180deg)}
+.top{display:flex;justify-content:space-between;align-items:flex-start}
+.lbl{font-size:16px;font-weight:700;color:#1e2d3d}
+.due{font-size:11px;color:#999;margin-top:3px}
+.icon{width:40px;height:40px;background:#f0f6fc;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+.amt{margin-top:10px}
+.big{font-size:36px;font-weight:800;color:#1e2d3d;line-height:1}
+.dec{font-size:20px;font-weight:700;color:#1e2d3d}
+.of{font-size:13px;color:#999;font-weight:400;margin-left:4px}
+.bar-wrap{width:370px;height:10px;background:#eef4fa;border-radius:5px;overflow:hidden;margin-top:18px}
+.bar-fill{height:100%;border-radius:5px}
+.t-green .bar-fill,.t-green .pill{background:#2ecc71}
+.t-green .icon{color:#2ecc71}
+.t-blue .bar-fill,.t-blue .pill{background:#4E95D9}
+.t-blue .icon{color:#4E95D9}
+.t-orange .bar-fill,.t-orange .pill{background:#e67e22}
+.t-orange .icon{color:#e67e22}
+.t-red .bar-fill,.t-red .pill{background:#c0392b}
+.t-red .icon{color:#c0392b}
+.bot{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.pill{font-size:13px;font-weight:700;color:#fff;padding:5px 18px;border-radius:99px}
+.gap-row{display:flex;align-items:center;gap:6px}
+.gap-lbl{font-size:12px;color:#999}
+.gap-val{font-size:14px;font-weight:700;color:#1e2d3d}
+.bk-tag{font-size:11px;text-transform:uppercase;letter-spacing:.8px;font-weight:600;color:#A6CAEC}
+.bk-title{font-size:18px;font-weight:700;color:#fff;margin-top:10px;line-height:1.4}
+.bk-body{font-size:13px;color:#c4d6e8;line-height:1.8;margin-top:12px}
+.bk-foot{font-size:11px;color:#7a9dbe}
+</style>
+<div class='kc " & _tierClass & "'>
+  <div class='flipper'>
+    <div class='front'>
+      <div>
+        <div class='top'>
+          <div>
+            <div class='lbl'>«LABEL: metric name, e.g. Gross Revenue»</div>
+            <div class='due'>«LABEL: period description, e.g. Target — FY 2025»</div>
+          </div>
+          <div class='icon'>" & _iconChar & "</div>
+        </div>
+        <div class='amt'>
+          <span class='big'>" & _revWhole & "</span><span class='dec'>" & _revDec & "</span><span class='of'>/ " & _targetFmt & " target</span>
+        </div>
+      </div>
+      <div>
+        <div class='bar-wrap'>
+          <div class='bar-fill' style='width:" & FORMAT(_barPx, "0") & "px'></div>
+        </div>
+        <div class='bot'>
+          <div class='pill'>" & _attainPct & "%</div>
+          <div class='gap-row'>
+            <span class='gap-lbl'>" & _gapLabel & "</span>
+            <span class='gap-val'>" & _gapFmt & "</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='back'>
+      <div>
+        <div class='bk-tag'>«LABEL: back-face section tag»</div>
+        <div class='bk-title'>«LABEL: back-face descriptive title»</div>
+        <div class='bk-body'>" & _attainPct & "% of " & _targetFmt & " target achieved.<br/>Gap remaining: " & _gapFmt & ".<br/>Performance tier: " & _tierClass & ".</div>
+      </div>
+      <div class='bk-foot'>Hover away to return</div>
+    </div>
+  </div>
+</div>"

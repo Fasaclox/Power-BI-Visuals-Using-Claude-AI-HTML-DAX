@@ -1,0 +1,65 @@
+Donut Single (Multi-Segment) =
+VAR _Total = «MEASURE: overall total»
+VAR _SegA = CALCULATE(«MEASURE», «FILTER: segment A»)
+VAR _SegB = CALCULATE(«MEASURE», «FILTER: segment B»)
+VAR _SegC = CALCULATE(«MEASURE», «FILTER: segment C»)
+-- Add/remove Seg VARs to match the number of segments (3+ recommended; for
+-- exactly 2 segments a simpler progress-ring shape may suit better — ask).
+
+VAR _SegAPct = ROUND(DIVIDE(_SegA, _Total, 0) * 100, 1)
+VAR _SegBPct = ROUND(DIVIDE(_SegB, _Total, 0) * 100, 1)
+VAR _SegCPct = ROUND(DIVIDE(_SegC, _Total, 0) * 100, 1)
+
+VAR _Circ = 251.33 -- circumference of the r=40 circle used below; keep in sync if radius changes
+VAR _SegAArc = ROUND(_Circ * _SegAPct / 100, 2)
+VAR _SegBArc = ROUND(_Circ * _SegBPct / 100, 2)
+VAR _SegCArc = ROUND(_Circ * _SegCPct / 100, 2)
+
+RETURN
+"<style>
+  .od{font-family:Segoe UI,sans-serif;padding:10px 14px;width:100%;height:100%;display:flex;flex-direction:column;align-items:center}
+  .od-t{font-size:14px;font-weight:800;color:#1a2b4a;margin-bottom:10px;align-self:flex-start}
+  .od-wrap{position:relative;width:140px;height:140px}
+  .od-svg{transform:rotate(-90deg)}
+  .od-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .od-cv{font-size:20px;font-weight:800;color:#1a2b4a}
+  .od-cl{font-size:8px;text-transform:uppercase;letter-spacing:2px;color:#8895a7;font-weight:700}
+  .od-leg{display:flex;flex-direction:column;gap:8px;margin-top:12px;align-self:flex-start;width:100%}
+  .od-leg-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .od-leg-left{display:flex;align-items:center;gap:6px}
+  .od-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+  .od-leg-name{font-size:12px;font-weight:600;color:#1a2b4a}
+  .od-leg-right{display:flex;align-items:center;gap:8px}
+  .od-leg-pct{font-size:12px;font-weight:800;color:#1a2b4a}
+  .od-leg-val{font-size:12px;color:#8895a7;font-weight:500}
+</style>
+<div class='od'>
+  <div class='od-t'>«TITLE»</div>
+  <div class='od-wrap'>
+    <svg class='od-svg' viewBox='0 0 100 100' width='140' height='140'>
+      <circle cx='50' cy='50' r='40' fill='none' stroke='#e8ecf0' stroke-width='10'/>
+      <circle cx='50' cy='50' r='40' fill='none' stroke='«SEGMENT A COLOR»' stroke-width='10'
+        stroke-dasharray='" & _SegAArc & " " & (_Circ - _SegAArc) & "'
+        stroke-dashoffset='0'/>
+      <circle cx='50' cy='50' r='40' fill='none' stroke='«SEGMENT B COLOR»' stroke-width='10'
+        stroke-dasharray='" & _SegBArc & " " & (_Circ - _SegBArc) & "'
+        stroke-dashoffset='-" & _SegAArc & "'/>
+      <circle cx='50' cy='50' r='40' fill='none' stroke='«SEGMENT C COLOR»' stroke-width='10'
+        stroke-dasharray='" & _SegCArc & " " & (_Circ - _SegCArc) & "'
+        stroke-dashoffset='-" & ROUND(_SegAArc + _SegBArc, 2) & "'/>
+      <!-- Add one more <circle> per additional segment; each new dashoffset
+           must be the NEGATIVE running sum of every arc drawn before it -->
+    </svg>
+    <div class='od-center'>
+      <div class='od-cv'>" & FORMAT(_Total, "#,0") & "</div>
+      <div class='od-cl'>«CENTER LABEL, e.g. Total»</div>
+    </div>
+  </div>
+  <div class='od-leg'>
+    <div class='od-leg-row'>
+      <div class='od-leg-left'><div class='od-leg-dot' style='background:«SEGMENT A COLOR»'></div><div class='od-leg-name'>«SEGMENT A LABEL»</div></div>
+      <div class='od-leg-right'><div class='od-leg-val'>" & FORMAT(_SegA, "#,0") & "</div><div class='od-leg-pct'>" & FORMAT(_SegAPct, "0.0") & "%</div></div>
+    </div>
+    <!-- Repeat one .od-leg-row per additional segment -->
+  </div>
+</div>"

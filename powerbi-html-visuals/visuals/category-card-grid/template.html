@@ -1,0 +1,77 @@
+Category Card Grid =
+VAR _Categories =
+    ADDCOLUMNS(
+        VALUES(«DIMENSION: grouping column, e.g. DimLocation[Country]»),
+        "@Code", «EXPRESSION (optional): a lookup key per category, e.g. a
+            SWITCH mapping country name to an ISO code for a flag image URL —
+            delete this column entirely if the card doesn't need an image»,
+        "@Total", CALCULATE(«MEASURE: overall count/total for this category»),
+        "@SplitA", CALCULATE(«MEASURE: same total»«FILTER: split condition A, e.g. DimPlayer[Gender] = "Male"»),
+        "@SplitB", CALCULATE(«MEASURE: same total»«FILTER: split condition B, e.g. DimPlayer[Gender] = "Female"»)
+    )
+VAR _Cards =
+    CONCATENATEX(
+        _Categories,
+        VAR _Name = «DIMENSION: same grouping column as above»
+        VAR _Code = [@Code]
+        VAR _T = [@Total]
+        VAR _A = [@SplitA]
+        VAR _B = [@SplitB]
+        VAR _APct = ROUND(DIVIDE(_A, _T, 0) * 100, 0)
+        VAR _BPct = ROUND(DIVIDE(_B, _T, 0) * 100, 0)
+        RETURN
+        "<div class='cc'>
+          <div class='cc-top'>
+            «OPTIONAL IMAGE: <img class='cc-flag' src='...' & _Code & '...'/> — remove
+            entirely if the category has no associated image (flag, logo, icon)»
+            <div class='cc-info'>
+              <div class='cc-name'>" & _Name & "</div>
+              <div class='cc-total'>" & FORMAT(_T, "#,0") & " «UNIT LABEL: e.g. players, units, records»</div>
+            </div>
+          </div>
+          <div class='cc-row'>
+            <div class='cc-g'>
+              <div class='cc-icon' style='background:#244181'>«SPLIT A SYMBOL: e.g. an initial or icon character»</div>
+              <div class='cc-data'>
+                <div class='cc-pct'>" & _APct & "%</div>
+                <div class='cc-val'>" & FORMAT(_A, "#,0") & "</div>
+              </div>
+            </div>
+            <div class='cc-div'></div>
+            <div class='cc-g'>
+              <div class='cc-icon' style='background:#5a85c8'>«SPLIT B SYMBOL»</div>
+              <div class='cc-data'>
+                <div class='cc-pct'>" & _BPct & "%</div>
+                <div class='cc-val'>" & FORMAT(_B, "#,0") & "</div>
+              </div>
+            </div>
+          </div>
+        </div>",
+        "",
+        [@Total], DESC
+    )
+RETURN
+"<style>
+  .cw{font-family:Segoe UI,sans-serif;padding:10px 14px;width:100%;height:100%;overflow-y:auto}
+  .cw-t{font-size:14px;font-weight:700;color:#1a2b4a;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #e8ecf0}
+  .cg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;row-gap:16px}
+  .cc{background:#f3f5f7;border:1px solid #e8ecf0;border-radius:12px;padding:12px 10px}
+  .cc-top{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e0e4e9}
+  .cc-flag{width:28px;height:auto;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+  .cc-info{display:flex;flex-direction:column;min-width:0}
+  .cc-name{font-size:14px;font-weight:700;color:#1a2b4a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cc-total{font-size:11px;font-weight:600;color:#244181;margin-top:1px}
+  .cc-row{display:flex;align-items:center;justify-content:center;gap:10px}
+  .cc-g{display:flex;align-items:center;gap:6px}
+  .cc-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+  .cc-data{display:flex;flex-direction:column;align-items:flex-start}
+  .cc-pct{font-size:14px;font-weight:800;color:#1a2b4a;line-height:1.2}
+  .cc-val{font-size:14px;color:#8895a7;font-weight:600;line-height:1.2}
+  .cc-div{width:1px;height:26px;background:#e0e4e9}
+</style>
+<div class='cw'>
+  <div class='cw-t'>«TITLE: e.g. Players by Country & Gender»</div>
+  <div class='cg'>
+    " & _Cards & "
+  </div>
+</div>"

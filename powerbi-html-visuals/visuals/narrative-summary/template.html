@@ -1,0 +1,41 @@
+Narrative Summary =
+VAR SelectedPeriod = SELECTEDVALUE(«DIMENSION: the period field being sliced, e.g. D_Date[Year]»)
+VAR HasSelection = NOT ISBLANK(SelectedPeriod)
+
+VAR ComparePeriod = IF(HasSelection, SelectedPeriod, MAXX(ALL(«same period dimension»), «same period dimension»))
+VAR BasePeriod = «BASELINE PERIOD: a fixed reference point to compare against, e.g. 2020»
+
+VAR CompareCount =
+    CALCULATE(
+        «MEASURE: what's being counted/summed, e.g. COUNTROWS(F_Properties)»,
+        «period dimension» = ComparePeriod
+    )
+
+VAR BaseCount =
+    CALCULATE(
+        «same MEASURE»,
+        «period dimension» = BasePeriod
+    )
+
+VAR AbsDiff = ABS(CompareCount - BaseCount)
+VAR PctChange = DIVIDE(CompareCount - BaseCount, BaseCount)
+VAR AbsPct = ABS(PctChange)
+VAR Direction = IF(PctChange >= 0, "up", "down")
+VAR Arrow = IF(PctChange >= 0, "▲", "▼")
+
+RETURN
+IF(
+    ComparePeriod = BasePeriod,
+    "«BASELINE SENTENCE TEMPLATE»: A total of " & FORMAT(BaseCount, "#,##0")
+    & " «UNIT LABEL, e.g. properties» were «VERB, e.g. listed» in " & BasePeriod & ".",
+
+    "«TREND SENTENCE TEMPLATE, e.g. Overall listings» went from " & FORMAT(BaseCount, "#,##0")
+    & " in " & BasePeriod
+    & " to " & FORMAT(CompareCount, "#,##0")
+    & " in " & ComparePeriod
+    & ", making «UNIT LABEL» " & Direction & " by "
+    & FORMAT(AbsDiff, "#,##0")
+    & " «UNIT LABEL» " & Arrow & " "
+    & FORMAT(AbsPct, "0.0%")
+    & " since " & BasePeriod & "."
+)

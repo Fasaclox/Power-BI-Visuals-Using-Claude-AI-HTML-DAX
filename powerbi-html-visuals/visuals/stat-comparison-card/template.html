@@ -1,0 +1,105 @@
+Stat Comparison Card =
+VAR AvgMetric1 = AVERAGE(«COLUMN: numeric field 1, e.g. F_Properties[monthly_rent_eur]»)
+VAR MedMetric1 = MEDIAN(«same COLUMN»)
+VAR AvgMetric2 = AVERAGE(«COLUMN: numeric field 2, e.g. F_Properties[sale_price_eur]»)
+VAR MedMetric2 = MEDIAN(«same COLUMN»)
+
+VAR Metric1Skew = ROUND(DIVIDE(AvgMetric1 - MedMetric1, MedMetric1) * 100, 1)
+VAR Metric2Skew = ROUND(DIVIDE(AvgMetric2 - MedMetric2, MedMetric2) * 100, 1)
+
+VAR Metric1MedianPct = ROUND(DIVIDE(MedMetric1, AvgMetric1) * 100, 1)
+VAR Metric2MedianPct = ROUND(DIVIDE(MedMetric2, AvgMetric2) * 100, 1)
+
+VAR OverallSkew = IF(Metric1Skew > 40 || Metric2Skew > 40, "High Skew", IF(Metric1Skew > 20 || Metric2Skew > 20, "Moderate", "Low Skew"))
+VAR PillBg = IF(Metric1Skew > 40 || Metric2Skew > 40, "rgba(192,57,43,0.12)", IF(Metric1Skew > 20 || Metric2Skew > 20, "rgba(230,126,34,0.12)", "rgba(8,155,171,0.12)"))
+VAR PillColor = IF(Metric1Skew > 40 || Metric2Skew > 40, "%23c0392b", IF(Metric1Skew > 20 || Metric2Skew > 20, "%23e67e22", "%23089BAB"))
+
+VAR Metric1AvgFmt = «FORMAT EXPRESSION: e.g. "€" & FORMAT(AvgMetric1, "#,##0")»
+VAR Metric1MedFmt = «FORMAT EXPRESSION for median, same unit/scale as above»
+VAR Metric2AvgFmt = «FORMAT EXPRESSION: pick an appropriate scale (K/M) for metric 2 if it's a much larger number, e.g. sale price»
+VAR Metric2MedFmt = «FORMAT EXPRESSION for metric 2's median»
+
+VAR InsightLine1 = "«INSIGHT SENTENCE 1, e.g. Median reflects what most records actually show.»"
+VAR InsightLine2 = "High-value outliers inflate the average by " & FORMAT(MAX(Metric1Skew, Metric2Skew), "0.0") & "%."
+
+RETURN
+"<style>
+.sw{width:380px;height:480px;background:#fff;border-radius:12px;padding:22px 20px;font-family:Segoe UI,sans-serif;border:1px solid #e0eeee;box-sizing:border-box;display:flex;flex-direction:column;gap:12px}
+.sh{display:flex;align-items:center;justify-content:space-between}
+.st{font-size:13px;font-weight:700;letter-spacing:.08em;color:#089BAB;text-transform:uppercase}
+.sp{font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;letter-spacing:.03em}
+.sec{flex:1;display:flex;flex-direction:column;gap:6px}
+.sl{font-size:14px;font-weight:700;color:#1c2b2b}
+.row{display:flex;gap:8px;align-items:stretch}
+.vb{flex:1;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;justify-content:center}
+.vl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.7;margin-bottom:2px}
+.vv{font-size:18px;font-weight:700}
+.tb{height:6px;border-radius:3px;background:#eef6f7;position:relative;overflow:visible}
+.tf{height:100%;border-radius:3px}
+.tm{position:absolute;top:-5px;height:16px;width:2px;border-radius:1px;background:#1c2b2b}
+.td{display:flex;justify-content:space-between;align-items:center}
+.tl{font-size:11px;color:#6a9a9a;font-weight:600}
+.sk{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;padding:3px 10px;border-radius:5px}
+.dv{border:none;border-top:1px solid #e8f4f4;margin:0}
+.ib{background:#f2fafa;border-radius:8px;padding:12px 14px;border:1px solid #d0ebec}
+.il{font-size:12.5px;color:#4a6666;line-height:1.6}
+.il b{color:#089BAB;font-weight:700}
+</style>
+<div class='sw'>
+
+  <div class='sh'>
+    <div class='st'>«TITLE, e.g. Avg vs Median Skew»</div>
+    <div class='sp' style='background:" & PillBg & ";color:" & PillColor & "'>" & OverallSkew & "</div>
+  </div>
+
+  <div class='sec'>
+    <div class='sl'>«METRIC 1 LABEL, e.g. Monthly Rent»</div>
+    <div class='row'>
+      <div class='vb' style='background:rgba(8,155,171,0.08)'>
+        <div class='vl' style='color:%23089BAB'>Median</div>
+        <div class='vv' style='color:%23089BAB'>" & Metric1MedFmt & "</div>
+      </div>
+      <div class='vb' style='background:rgba(28,43,43,0.05)'>
+        <div class='vl' style='color:%231c2b2b'>Average</div>
+        <div class='vv' style='color:%231c2b2b'>" & Metric1AvgFmt & "</div>
+      </div>
+    </div>
+    <div class='tb'>
+      <div class='tf' style='width:100%25;background:%23089BAB;opacity:0.25'></div>
+      <div class='tm' style='left:" & FORMAT(Metric1MedianPct,"0.0") & "%25'></div>
+    </div>
+    <div class='td'>
+      <span class='tl'>Median at " & FORMAT(Metric1MedianPct,"0.0") & "% of avg</span>
+      <span class='sk' style='background:rgba(192,57,43,0.1);color:%23c0392b'>+" & FORMAT(Metric1Skew,"0.0") & "% skew</span>
+    </div>
+  </div>
+
+  <hr class='dv'>
+
+  <div class='sec'>
+    <div class='sl'>«METRIC 2 LABEL»</div>
+    <div class='row'>
+      <div class='vb' style='background:rgba(13,122,136,0.08)'>
+        <div class='vl' style='color:%230d7a88'>Median</div>
+        <div class='vv' style='color:%230d7a88'>" & Metric2MedFmt & "</div>
+      </div>
+      <div class='vb' style='background:rgba(28,43,43,0.05)'>
+        <div class='vl' style='color:%231c2b2b'>Average</div>
+        <div class='vv' style='color:%231c2b2b'>" & Metric2AvgFmt & "</div>
+      </div>
+    </div>
+    <div class='tb'>
+      <div class='tf' style='width:100%25;background:%230d7a88;opacity:0.25'></div>
+      <div class='tm' style='left:" & FORMAT(Metric2MedianPct,"0.0") & "%25'></div>
+    </div>
+    <div class='td'>
+      <span class='tl'>Median at " & FORMAT(Metric2MedianPct,"0.0") & "% of avg</span>
+      <span class='sk' style='background:rgba(192,57,43,0.1);color:%23c0392b'>+" & FORMAT(Metric2Skew,"0.0") & "% skew</span>
+    </div>
+  </div>
+
+  <div class='ib'>
+    <div class='il'><b>Insight:</b> " & InsightLine1 & " " & InsightLine2 & "</div>
+  </div>
+
+</div>"

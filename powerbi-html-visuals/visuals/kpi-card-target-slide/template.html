@@ -1,0 +1,102 @@
+KPI Card — Revenue vs Target (Slide Effect) =
+
+VAR _rev = «MEASURE: current period total, numeric, not pre-formatted»
+VAR _target = «MEASURE: target value for the same period, numeric»
+VAR _attain = «MEASURE: _rev / _target as a decimal (e.g. 0.82), numeric»
+VAR _gap = «MEASURE: _target - _rev, numeric (can be negative if over target)»
+
+// ── Formatting ──
+VAR _revWhole = FORMAT(INT(_rev), "$#,##0")
+VAR _revDec = "." & FORMAT((_rev - INT(_rev)) * 100, "00")
+VAR _targetFmt = IF(_target >= 1000000000, FORMAT(_target / 1000000000, "$#,0.0") & "B", IF(_target >= 1000000, FORMAT(_target / 1000000, "$#,0.0") & "M", IF(_target >= 1000, FORMAT(_target / 1000, "$#,0") & "K", FORMAT(_target, "$#,0"))))
+VAR _attainPct = FORMAT(_attain * 100, "0.0")
+VAR _attainBarVal = MAX(MIN(_attain * 100, 100), 6)
+VAR _gapFmt = IF(ABS(_gap) >= 1000000000, FORMAT(ABS(_gap) / 1000000000, "$#,0.00") & "B", IF(ABS(_gap) >= 1000000, FORMAT(ABS(_gap) / 1000000, "$#,0.00") & "M", IF(ABS(_gap) >= 1000, FORMAT(ABS(_gap) / 1000, "$#,0.0") & "K", FORMAT(ABS(_gap), "$#,0.00"))))
+VAR _gapLabel = IF(_gap > 0, "Left to reach target", "Exceeded target by")
+
+// ── Color tier by attainment ──
+VAR _tierClass = IF(_attain >= 1, "t-green", IF(_attain >= 0.7, "t-blue", IF(_attain >= 0.4, "t-orange", "t-red")))
+
+// ── Bar width as px out of 416px track ──
+VAR _barPx = ROUND(_attainBarVal / 100 * 416, 0)
+
+// ── Icon: check if target met, ring if not ──
+VAR _iconChar = IF(_attain >= 1, "&#10004;", "&#9678;")
+
+VAR _hintSvg = "<svg width='10' height='10' viewBox='0 0 10 10'><path d='M2 5H8M8 5L6 3M8 5L6 7' fill='none' stroke='%23CCC' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+
+RETURN
+"<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,sans-serif}
+.kc{position:relative;border-radius:14px;overflow:hidden;width:460px;height:260px;cursor:default;border:1px solid #cccc}
+.front,.back{position:absolute;inset:0;padding:20px 22px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .45s cubic-bezier(.25,.46,.45,.94),opacity .35s ease}
+.front{background:#FFFFFF;border-radius:11px;opacity:1;transform:translateX(0)}
+.back{background:#1e2d3d;border-radius:11px;opacity:0;transform:translateX(-100%)}
+.kc:hover .front{opacity:0;transform:translateX(100%)}
+.kc:hover .back{opacity:1;transform:translateX(0)}
+.top{display:flex;justify-content:space-between;align-items:flex-start}
+.lbl{font-size:15px;font-weight:600;color:#1e2d3d}
+.due{font-size:11px;color:#999;margin-top:3px}
+.icon{width:36px;height:36px;background:#f0f6fc;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;color:#4E95D9}
+.amt{margin-top:14px}
+.big{font-size:28px;font-weight:700;color:#1e2d3d}
+.dec{font-size:16px;font-weight:600;color:#1e2d3d}
+.of{font-size:13px;color:#999;font-weight:400;margin-left:2px}
+.bar-wrap{width:416px;height:10px;background:#eef4fa;border-radius:5px;overflow:hidden;margin-top:18px}
+.bar-fill{height:100%;border-radius:5px}
+.t-green .bar-fill,.t-green .pill{background:#2ecc71}
+.t-green .icon{color:#2ecc71}
+.t-blue .bar-fill,.t-blue .pill{background:#4E95D9}
+.t-blue .icon{color:#4E95D9}
+.t-orange .bar-fill,.t-orange .pill{background:#e67e22}
+.t-orange .icon{color:#e67e22}
+.t-red .bar-fill,.t-red .pill{background:#c0392b}
+.t-red .icon{color:#c0392b}
+.bot{display:flex;justify-content:space-between;align-items:center;margin-top:14px}
+.pill{font-size:12px;font-weight:700;color:#fff;padding:5px 16px;border-radius:99px}
+.gap-row{display:flex;align-items:center;gap:6px}
+.gap-lbl{font-size:12px;color:#999}
+.gap-val{font-size:13px;font-weight:700;color:#1e2d3d}
+.hint{font-size:9px;color:#CCC;display:flex;align-items:center;gap:3px;justify-content:flex-end;margin-top:8px}
+.bk-tag{font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:600;color:#A6CAEC}
+.bk-title{font-size:16px;font-weight:700;color:#fff;margin-top:12px;line-height:1.4}
+.bk-body{font-size:12.5px;color:#c4d6e8;line-height:1.7;margin-top:10px}
+.bk-foot{font-size:10px;color:#7a9dbe}
+</style>
+<div class='kc " & _tierClass & "'>
+  <div class='front'>
+    <div>
+      <div class='top'>
+        <div>
+          <div class='lbl'>«LABEL: metric name, e.g. Gross Revenue»</div>
+          <div class='due'>«LABEL: period description, e.g. Target Period — FY 2025»</div>
+        </div>
+        <div class='icon'>" & _iconChar & "</div>
+      </div>
+      <div class='amt'>
+        <span class='big'>" & _revWhole & "</span><span class='dec'>" & _revDec & "</span><span class='of'>/" & _targetFmt & "</span>
+      </div>
+    </div>
+    <div>
+      <div class='bar-wrap'>
+        <div class='bar-fill' style='width:" & FORMAT(_barPx, "0") & "px'></div>
+      </div>
+      <div class='bot'>
+        <div class='pill'>" & _attainPct & "%</div>
+        <div class='gap-row'>
+          <span class='gap-lbl'>" & _gapLabel & "</span>
+          <span class='gap-val'>" & _gapFmt & "</span>
+        </div>
+      </div>
+      <div class='hint'>" & _hintSvg & " Hover</div>
+    </div>
+  </div>
+  <div class='back'>
+    <div>
+      <div class='bk-tag'>«LABEL: back-face section tag, e.g. Revenue Detail»</div>
+      <div class='bk-title'>«LABEL: back-face descriptive title»</div>
+      <div class='bk-body'>Current attainment is at " & _attainPct & "% of the " & _targetFmt & " target.<br/>The remaining gap is " & _gapFmt & ".</div>
+    </div>
+    <div class='bk-foot'>Hover away to return</div>
+  </div>
+</div>"

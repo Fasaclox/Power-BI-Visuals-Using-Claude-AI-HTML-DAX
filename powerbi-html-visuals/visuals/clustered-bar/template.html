@@ -1,0 +1,49 @@
+Clustered Bar (2-Series) =
+VAR _Grp1SeriesA = CALCULATE(«MEASURE», «FILTER: group 1», «FILTER: series A, e.g. Gender = "Female"»)
+VAR _Grp1SeriesB = CALCULATE(«MEASURE», «FILTER: group 1», «FILTER: series B, e.g. Gender = "Male"»)
+VAR _Grp2SeriesA = CALCULATE(«MEASURE», «FILTER: group 2», «FILTER: series A»)
+VAR _Grp2SeriesB = CALCULATE(«MEASURE», «FILTER: group 2», «FILTER: series B»)
+VAR _Grp3SeriesA = CALCULATE(«MEASURE», «FILTER: group 3», «FILTER: series A»)
+VAR _Grp3SeriesB = CALCULATE(«MEASURE», «FILTER: group 3», «FILTER: series B»)
+-- Add/remove Grp blocks to match the number of groups (age buckets, categories, etc.)
+
+VAR _Max = MAX(_Grp1SeriesA, MAX(_Grp1SeriesB, MAX(_Grp2SeriesA, MAX(_Grp2SeriesB, MAX(_Grp3SeriesA, _Grp3SeriesB)))))
+VAR _W1A = ROUND(DIVIDE(_Grp1SeriesA, _Max, 0) * 100, 0)
+VAR _W1B = ROUND(DIVIDE(_Grp1SeriesB, _Max, 0) * 100, 0)
+VAR _W2A = ROUND(DIVIDE(_Grp2SeriesA, _Max, 0) * 100, 0)
+VAR _W2B = ROUND(DIVIDE(_Grp2SeriesB, _Max, 0) * 100, 0)
+VAR _W3A = ROUND(DIVIDE(_Grp3SeriesA, _Max, 0) * 100, 0)
+VAR _W3B = ROUND(DIVIDE(_Grp3SeriesB, _Max, 0) * 100, 0)
+
+RETURN
+"<style>
+  .ac{font-family:Segoe UI,sans-serif;padding:10px 14px;width:100%;height:100%}
+  .ac-t{font-size:14px;font-weight:800;color:#1a2b4a;margin-bottom:2px}
+  .ac-st{font-size:10px;color:#8895a7;font-style:italic;margin-bottom:8px}
+  .ac-leg{display:flex;gap:12px;margin-bottom:10px}
+  .ac-leg-i{display:flex;align-items:center;gap:4px;font-size:11px;color:#5f6b7a;font-weight:600}
+  .ac-leg-d{width:10px;height:10px;border-radius:3px}
+  .ac-group{margin-bottom:12px}
+  .ac-lbl{font-size:11px;font-weight:700;color:#5f6b7a;margin-bottom:5px}
+  .ac-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .ac-track{flex:1;height:22px;background:#e8ecf0;border-radius:6px;overflow:hidden}
+  .ac-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:10px;font-weight:700;color:#fff;min-width:30px}
+</style>
+<div class='ac'>
+  <div class='ac-t'>«TITLE»</div>
+  <div class='ac-st'>«SUBTITLE (optional): a framing question, e.g. How does X vary across groups?»</div>
+  <div class='ac-leg'>
+    <div class='ac-leg-i'><div class='ac-leg-d' style='background:#244181'></div>«SERIES A LABEL»</div>
+    <div class='ac-leg-i'><div class='ac-leg-d' style='background:#5a8fe0'></div>«SERIES B LABEL»</div>
+  </div>
+  <div class='ac-group'>
+    <div class='ac-lbl'>«GROUP 1 NAME»</div>
+    <div class='ac-row'>
+      <div class='ac-track'><div class='ac-fill' style='width:" & _W1A & "%;background:linear-gradient(to right,#0d1b30,#244181)'>" & FORMAT(_Grp1SeriesA, "#,0") & "</div></div>
+    </div>
+    <div class='ac-row'>
+      <div class='ac-track'><div class='ac-fill' style='width:" & _W1B & "%;background:linear-gradient(to right,#3a6bbf,#7aa8eb)'>" & FORMAT(_Grp1SeriesB, "#,0") & "</div></div>
+    </div>
+  </div>
+  <!-- Repeat one .ac-group block per additional group, using that group's W_A/W_B and raw values -->
+</div>"

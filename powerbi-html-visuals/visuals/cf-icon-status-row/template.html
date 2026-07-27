@@ -1,0 +1,48 @@
+CF Icon Status Row =
+// Repeat this pair of VARs (color + mark) for each boolean column being shown.
+// The template below is written for 4 icons; add/remove blocks + adjust the
+// SVG width and gap math if the user needs a different count.
+
+VAR _flag1 = «COLUMN 1: boolean or Yes/No field, e.g. F_Properties[parking_spots] > 0»
+VAR _flag2 = «COLUMN 2: boolean or Yes/No field, e.g. F_Properties[gym] = "Yes"»
+VAR _flag3 = «COLUMN 3: boolean or Yes/No field»
+VAR _flag4 = «COLUMN 4: boolean or Yes/No field»
+
+VAR _c1 = IF(_flag1, "%23089BAB", "%23cccccc")
+VAR _c2 = IF(_flag2, "%23089BAB", "%23cccccc")
+VAR _c3 = IF(_flag3, "%23089BAB", "%23cccccc")
+VAR _c4 = IF(_flag4, "%23089BAB", "%23cccccc")
+
+VAR _bg1 = IF(_flag1, "%23e8f7f8", "%23f5f5f5")
+VAR _bg2 = IF(_flag2, "%23e8f7f8", "%23f5f5f5")
+VAR _bg3 = IF(_flag3, "%23e8f7f8", "%23f5f5f5")
+VAR _bg4 = IF(_flag4, "%23e8f7f8", "%23f5f5f5")
+
+-- Checkmark path if true, X path if false — swap these for icon-specific
+-- glyphs if the user wants recognizable icons (car/dumbbell/pool/elevator)
+-- rather than a generic check/cross; that requires per-column custom paths.
+VAR _m1 = IF(_flag1, "M4 10 L7 13 L12 7", "M5 5 L13 13 M13 5 L5 13")
+VAR _m2 = IF(_flag2, "M4 10 L7 13 L12 7", "M5 5 L13 13 M13 5 L5 13")
+VAR _m3 = IF(_flag3, "M4 10 L7 13 L12 7", "M5 5 L13 13 M13 5 L5 13")
+VAR _m4 = IF(_flag4, "M4 10 L7 13 L12 7", "M5 5 L13 13 M13 5 L5 13")
+
+VAR _size = "18"
+VAR _gap  = "22"
+
+RETURN
+"data:image/svg+xml;utf8," &
+"<svg xmlns='http://www.w3.org/2000/svg' width='92' height='22'>" &
+
+    "<rect x='1' y='2' width='" & _size & "' height='" & _size & "' rx='4' fill='" & _bg1 & "' stroke='" & _c1 & "' stroke-width='1.5'/>" &
+    "<path d='" & _m1 & "' stroke='" & _c1 & "' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/>" &
+
+    "<rect x='" & (1 + VALUE(_gap)) & "' y='2' width='" & _size & "' height='" & _size & "' rx='4' fill='" & _bg2 & "' stroke='" & _c2 & "' stroke-width='1.5'/>" &
+    "<path d='" & _m2 & "' transform='translate(" & VALUE(_gap) & ",0)' stroke='" & _c2 & "' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/>" &
+
+    "<rect x='" & (1 + VALUE(_gap) * 2) & "' y='2' width='" & _size & "' height='" & _size & "' rx='4' fill='" & _bg3 & "' stroke='" & _c3 & "' stroke-width='1.5'/>" &
+    "<path d='" & _m3 & "' transform='translate(" & VALUE(_gap) * 2 & ",0)' stroke='" & _c3 & "' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/>" &
+
+    "<rect x='" & (1 + VALUE(_gap) * 3) & "' y='2' width='" & _size & "' height='" & _size & "' rx='4' fill='" & _bg4 & "' stroke='" & _c4 & "' stroke-width='1.5'/>" &
+    "<path d='" & _m4 & "' transform='translate(" & VALUE(_gap) * 3 & ",0)' stroke='" & _c4 & "' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' fill='none'/>" &
+
+"</svg>"

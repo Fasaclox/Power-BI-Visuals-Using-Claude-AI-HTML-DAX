@@ -1,0 +1,61 @@
+Stacked Column (2-Series) =
+VAR _Grp1SeriesA = CALCULATE(«MEASURE», «FILTER: group 1», «FILTER: series A»)
+VAR _Grp1SeriesB = CALCULATE(«MEASURE», «FILTER: group 1», «FILTER: series B»)
+VAR _Grp1Total = _Grp1SeriesA + _Grp1SeriesB
+VAR _Grp2SeriesA = CALCULATE(«MEASURE», «FILTER: group 2», «FILTER: series A»)
+VAR _Grp2SeriesB = CALCULATE(«MEASURE», «FILTER: group 2», «FILTER: series B»)
+VAR _Grp2Total = _Grp2SeriesA + _Grp2SeriesB
+VAR _Grp3SeriesA = CALCULATE(«MEASURE», «FILTER: group 3», «FILTER: series A»)
+VAR _Grp3SeriesB = CALCULATE(«MEASURE», «FILTER: group 3», «FILTER: series B»)
+VAR _Grp3Total = _Grp3SeriesA + _Grp3SeriesB
+-- Add/remove Grp blocks to match the number of groups
+
+VAR _Max = MAX(_Grp1Total, MAX(_Grp2Total, _Grp3Total))
+VAR _Scale = 150
+VAR _H1A = ROUND(DIVIDE(_Grp1SeriesA, _Max, 0) * _Scale, 0)
+VAR _H1B = ROUND(DIVIDE(_Grp1SeriesB, _Max, 0) * _Scale, 0)
+VAR _H2A = ROUND(DIVIDE(_Grp2SeriesA, _Max, 0) * _Scale, 0)
+VAR _H2B = ROUND(DIVIDE(_Grp2SeriesB, _Max, 0) * _Scale, 0)
+VAR _H3A = ROUND(DIVIDE(_Grp3SeriesA, _Max, 0) * _Scale, 0)
+VAR _H3B = ROUND(DIVIDE(_Grp3SeriesB, _Max, 0) * _Scale, 0)
+
+RETURN
+"<style>
+  .sc{font-family:Segoe UI,sans-serif;padding:10px 14px;width:100%;height:100%}
+  .sc-t{font-size:14px;font-weight:800;color:#1a2b4a;margin-bottom:2px}
+  .sc-st{font-size:10px;color:#8895a7;font-style:italic;margin-bottom:8px}
+  .sc-leg{display:flex;gap:12px;margin-bottom:10px}
+  .sc-leg-i{display:flex;align-items:center;gap:4px;font-size:11px;color:#5f6b7a;font-weight:600}
+  .sc-leg-d{width:10px;height:10px;border-radius:3px}
+  .sc-chart{display:flex;align-items:flex-end;justify-content:center;gap:36px;height:180px;border-bottom:1px solid #e8ecf0;padding-bottom:0}
+  .sc-col{display:flex;flex-direction:column;align-items:center;gap:0}
+  .sc-stack{display:flex;flex-direction:column;align-items:center;width:48px}
+  .sc-seg{width:100%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+  .sc-seg-a{border-radius:0 0 0 0;background:linear-gradient(to top,#0d1b30,#244181)}
+  .sc-seg-b{border-radius:6px 6px 0 0;background:linear-gradient(to top,#3a6bbf,#7aa8eb)}
+  .sc-total{font-size:10px;font-weight:800;color:#1a2b4a;margin-bottom:4px}
+  .sc-labels{display:flex;justify-content:center;gap:36px;margin-top:6px}
+  .sc-lbl{width:48px;text-align:center;font-size:10px;font-weight:700;color:#5f6b7a}
+</style>
+<div class='sc'>
+  <div class='sc-t'>«TITLE»</div>
+  <div class='sc-st'>«SUBTITLE (optional)»</div>
+  <div class='sc-leg'>
+    <div class='sc-leg-i'><div class='sc-leg-d' style='background:#244181'></div>«SERIES A LABEL»</div>
+    <div class='sc-leg-i'><div class='sc-leg-d' style='background:#5a8fe0'></div>«SERIES B LABEL»</div>
+  </div>
+  <div class='sc-chart'>
+    <div class='sc-col'>
+      <div class='sc-total'>" & FORMAT(_Grp1Total, "#,0") & "</div>
+      <div class='sc-stack'>
+        <div class='sc-seg sc-seg-b' style='height:" & _H1B & "px'>" & FORMAT(_Grp1SeriesB, "#,0") & "</div>
+        <div class='sc-seg sc-seg-a' style='height:" & _H1A & "px'>" & FORMAT(_Grp1SeriesA, "#,0") & "</div>
+      </div>
+    </div>
+    <!-- Repeat one .sc-col block per additional group -->
+  </div>
+  <div class='sc-labels'>
+    <div class='sc-lbl'>«GROUP 1 NAME»</div>
+    <!-- Repeat one .sc-lbl div per additional group, matching order above -->
+  </div>
+</div>"

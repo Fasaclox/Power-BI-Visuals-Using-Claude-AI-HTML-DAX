@@ -1,0 +1,47 @@
+Stacked Bar 100% =
+// This template computes one row per fixed category. The source repo hardcodes
+// each category as its own block of VARs (no dynamic category list) — repeat
+// the pattern below once per category the user needs, in the order they
+// should appear top-to-bottom.
+
+// ── «CATEGORY 1 NAME» ──
+VAR _Cat1Total = CALCULATE(«MEASURE: count/total», «FILTER: category 1, e.g. DimClub[Sport] = "Football"»)
+VAR _Cat1Seg1 = ROUND(DIVIDE(CALCULATE(«MEASURE», «FILTER: category 1», «FILTER: segment 1, e.g. DimPlayer[InjuryRisk] = "Critical Risk"»), _Cat1Total, 0) * 100, 0)
+VAR _Cat1Seg2 = ROUND(DIVIDE(CALCULATE(«MEASURE», «FILTER: category 1», «FILTER: segment 2»), _Cat1Total, 0) * 100, 0)
+VAR _Cat1Seg3 = ROUND(DIVIDE(CALCULATE(«MEASURE», «FILTER: category 1», «FILTER: segment 3»), _Cat1Total, 0) * 100, 0)
+VAR _Cat1Seg4 = ROUND(DIVIDE(CALCULATE(«MEASURE», «FILTER: category 1», «FILTER: segment 4»), _Cat1Total, 0) * 100, 0)
+
+// ── Repeat the block above for each additional category (Cat2, Cat3, ...) ──
+
+RETURN
+"<style>
+  .rs{font-family:Segoe UI,sans-serif;padding:10px 14px;width:100%;height:100%}
+  .rs-t{font-size:13px;font-weight:700;color:#1a2b4a;margin-bottom:6px}
+  .rs-leg{display:flex;gap:8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e8ecf0}
+  .rs-leg-i{display:flex;align-items:center;gap:3px;font-size:8px;color:#8895a7;font-weight:600}
+  .rs-leg-d{width:8px;height:8px;border-radius:2px}
+  .rs-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .rs-name{font-size:11px;font-weight:700;color:#1a2b4a;width:72px;flex-shrink:0}
+  .rs-bar{flex:1;height:26px;display:flex;border-radius:6px;overflow:hidden;gap:1px}
+  .rs-seg{display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;white-space:nowrap}
+</style>
+<div class='rs'>
+  <div class='rs-t'>«TITLE: e.g. Injury Risk by Sport»</div>
+  <div class='rs-leg'>
+    <div class='rs-leg-i'><div class='rs-leg-d' style='background:#D93025'></div>«SEGMENT 1 LABEL»</div>
+    <div class='rs-leg-i'><div class='rs-leg-d' style='background:#F59E0B'></div>«SEGMENT 2 LABEL»</div>
+    <div class='rs-leg-i'><div class='rs-leg-d' style='background:#3B82F6'></div>«SEGMENT 3 LABEL»</div>
+    <div class='rs-leg-i'><div class='rs-leg-d' style='background:#22C55E'></div>«SEGMENT 4 LABEL»</div>
+  </div>
+
+  <div class='rs-row'>
+    <div class='rs-name'>«CATEGORY 1 NAME»</div>
+    <div class='rs-bar'>
+      <div class='rs-seg' style='flex:" & _Cat1Seg1 & ";background:#D93025'>" & _Cat1Seg1 & "%</div>
+      <div class='rs-seg' style='flex:" & _Cat1Seg2 & ";background:#F59E0B'>" & _Cat1Seg2 & "%</div>
+      <div class='rs-seg' style='flex:" & _Cat1Seg3 & ";background:#3B82F6'>" & _Cat1Seg3 & "%</div>
+      <div class='rs-seg' style='flex:" & _Cat1Seg4 & ";background:#22C55E'>" & _Cat1Seg4 & "%</div>
+    </div>
+  </div>
+  <!-- Repeat one .rs-row block per additional category -->
+</div>"

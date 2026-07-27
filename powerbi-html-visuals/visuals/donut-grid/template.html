@@ -1,0 +1,56 @@
+Donut Grid (Small Multiples) =
+VAR _Total = «MEASURE: overall total, used as the denominator for every category's share»
+VAR _CatA = CALCULATE(«MEASURE», «FILTER: category A»)
+VAR _CatB = CALCULATE(«MEASURE», «FILTER: category B»)
+VAR _CatC = CALCULATE(«MEASURE», «FILTER: category C»)
+VAR _CatD = CALCULATE(«MEASURE», «FILTER: category D»)
+-- Add/remove Cat VARs to match the number of categories (grid is 2 columns —
+-- an odd count will leave one card alone on the last row, which is fine).
+
+VAR _CatAPct = ROUND(DIVIDE(_CatA, _Total, 0) * 100, 1)
+VAR _CatBPct = ROUND(DIVIDE(_CatB, _Total, 0) * 100, 1)
+VAR _CatCPct = ROUND(DIVIDE(_CatC, _Total, 0) * 100, 1)
+VAR _CatDPct = ROUND(DIVIDE(_CatD, _Total, 0) * 100, 1)
+
+VAR _Circ = 251.33 -- circumference of the r=40 circle; keep in sync if radius changes
+-- Each donut here shows ONE category's share vs. the rest (not vs. other
+-- categories) — so each uses stroke-dashoffset computed from its own % only,
+-- unlike donut-single where offsets accumulate across segments.
+VAR _CatAOff = ROUND(_Circ * (1 - _CatAPct/100), 2)
+VAR _CatBOff = ROUND(_Circ * (1 - _CatBPct/100), 2)
+VAR _CatCOff = ROUND(_Circ * (1 - _CatCPct/100), 2)
+VAR _CatDOff = ROUND(_Circ * (1 - _CatDPct/100), 2)
+
+RETURN
+"<style>
+  .cd{font-family:Segoe UI,sans-serif;padding:8px 12px;width:100%;height:100%}
+  .cd-t{font-size:14px;font-weight:800;color:#1a2b4a;margin-bottom:10px}
+  .cd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .cd-card{background:#f3f5f7;border-radius:12px;padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center}
+  .cd-svg{width:100px;height:100px}
+  .cd-center{font-size:22px}
+  .cd-name{font-size:12px;font-weight:700;color:#1a2b4a;margin-top:6px}
+  .cd-pct{font-size:18px;font-weight:800;color:#1a2b4a;margin-top:2px}
+  .cd-val{font-size:11px;color:#8895a7;font-weight:500;margin-top:1px}
+  .track{fill:none;stroke:#e0e4e9;stroke-width:8}
+  .fill{fill:none;stroke-width:8;stroke-linecap:round}
+  .icon{font-size:20px}
+</style>
+<div class='cd'>
+  <div class='cd-t'>«TITLE»</div>
+  <div class='cd-grid'>
+    <div class='cd-card'>
+      <svg class='cd-svg' viewBox='0 0 100 100'>
+        <circle class='track' cx='50' cy='50' r='40'/>
+        <circle class='fill' cx='50' cy='50' r='40' stroke='«CATEGORY A COLOR»'
+          stroke-dasharray='" & _Circ & "' stroke-dashoffset='" & _CatAOff & "'
+          transform='rotate(-90 50 50)'/>
+        <text x='50' y='56' text-anchor='middle' class='icon'>«OPTIONAL EMOJI/ICON for category A — delete <text> entirely if not wanted»</text>
+      </svg>
+      <div class='cd-name'>«CATEGORY A NAME»</div>
+      <div class='cd-pct'>" & FORMAT(_CatAPct, "0.0") & "%</div>
+      <div class='cd-val'>" & FORMAT(_CatA, "#,0") & " of " & FORMAT(_Total, "#,0") & "</div>
+    </div>
+    <!-- Repeat one .cd-card block per additional category -->
+  </div>
+</div>"

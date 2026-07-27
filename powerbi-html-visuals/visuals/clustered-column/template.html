@@ -1,0 +1,56 @@
+Clustered Column (2-Series) =
+VAR _Grp1SeriesA = CALCULATE(«MEASURE», «FILTER: group 1», «FILTER: series A»)
+VAR _Grp1SeriesB = CALCULATE(«MEASURE», «FILTER: group 1», «FILTER: series B»)
+VAR _Grp2SeriesA = CALCULATE(«MEASURE», «FILTER: group 2», «FILTER: series A»)
+VAR _Grp2SeriesB = CALCULATE(«MEASURE», «FILTER: group 2», «FILTER: series B»)
+VAR _Grp3SeriesA = CALCULATE(«MEASURE», «FILTER: group 3», «FILTER: series A»)
+VAR _Grp3SeriesB = CALCULATE(«MEASURE», «FILTER: group 3», «FILTER: series B»)
+VAR _Grp4SeriesA = CALCULATE(«MEASURE», «FILTER: group 4», «FILTER: series A»)
+VAR _Grp4SeriesB = CALCULATE(«MEASURE», «FILTER: group 4», «FILTER: series B»)
+-- Add/remove Grp blocks to match the number of groups (causes, categories, etc.)
+
+VAR _Max = MAX(_Grp1SeriesA, MAX(_Grp1SeriesB, MAX(_Grp2SeriesA, MAX(_Grp2SeriesB, MAX(_Grp3SeriesA, MAX(_Grp3SeriesB, MAX(_Grp4SeriesA, _Grp4SeriesB)))))))
+VAR _Scale = 150
+VAR _H1A = ROUND(DIVIDE(_Grp1SeriesA, _Max, 0) * _Scale, 0)
+VAR _H1B = ROUND(DIVIDE(_Grp1SeriesB, _Max, 0) * _Scale, 0)
+VAR _H2A = ROUND(DIVIDE(_Grp2SeriesA, _Max, 0) * _Scale, 0)
+VAR _H2B = ROUND(DIVIDE(_Grp2SeriesB, _Max, 0) * _Scale, 0)
+VAR _H3A = ROUND(DIVIDE(_Grp3SeriesA, _Max, 0) * _Scale, 0)
+VAR _H3B = ROUND(DIVIDE(_Grp3SeriesB, _Max, 0) * _Scale, 0)
+VAR _H4A = ROUND(DIVIDE(_Grp4SeriesA, _Max, 0) * _Scale, 0)
+VAR _H4B = ROUND(DIVIDE(_Grp4SeriesB, _Max, 0) * _Scale, 0)
+
+RETURN
+"<style>
+  .gc{font-family:Segoe UI,sans-serif;padding:10px 14px;width:100%;height:100%}
+  .gc-t{font-size:14px;font-weight:800;color:#1a2b4a;margin-bottom:2px}
+  .gc-st{font-size:12px;color:#8895a7;font-style:italic;margin-bottom:8px}
+  .gc-leg{display:flex;gap:12px;margin-bottom:10px}
+  .gc-leg-i{display:flex;align-items:center;gap:4px;font-size:12px;color:#5f6b7a;font-weight:600}
+  .gc-leg-d{width:10px;height:10px;border-radius:3px}
+  .gc-chart{display:flex;align-items:flex-end;justify-content:center;gap:35px;height:180px;border-bottom:1px solid #e8ecf0}
+  .gc-group{display:flex;align-items:flex-end;gap:4px}
+  .gc-bar{width:32px;border-radius:6px 6px 0 0;position:relative;min-height:4px}
+  .gc-bar-val{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:700;color:#1a2b4a;white-space:nowrap}
+  .gc-labels{display:flex;justify-content:center;gap:35px;margin-top:6px}
+  .gc-lbl{width:68px;text-align:center;font-size:12px;font-weight:700;color:#5f6b7a}
+</style>
+<div class='gc'>
+  <div class='gc-t'>«TITLE»</div>
+  <div class='gc-st'>«SUBTITLE (optional)»</div>
+  <div class='gc-leg'>
+    <div class='gc-leg-i'><div class='gc-leg-d' style='background:#244181'></div>«SERIES A LABEL»</div>
+    <div class='gc-leg-i'><div class='gc-leg-d' style='background:#7aa8eb'></div>«SERIES B LABEL»</div>
+  </div>
+  <div class='gc-chart'>
+    <div class='gc-group'>
+      <div class='gc-bar' style='height:" & _H1A & "px;background:linear-gradient(to top,#0d1b30,#244181)'><div class='gc-bar-val'>" & FORMAT(_Grp1SeriesA, "#,0") & "</div></div>
+      <div class='gc-bar' style='height:" & _H1B & "px;background:linear-gradient(to top,#3a6bbf,#7aa8eb)'><div class='gc-bar-val'>" & FORMAT(_Grp1SeriesB, "#,0") & "</div></div>
+    </div>
+    <!-- Repeat one .gc-group block per additional group -->
+  </div>
+  <div class='gc-labels'>
+    <div class='gc-lbl'>«GROUP 1 NAME (optionally prefixed with an icon)»</div>
+    <!-- Repeat one .gc-lbl div per additional group, in the same order as the bars above -->
+  </div>
+</div>"

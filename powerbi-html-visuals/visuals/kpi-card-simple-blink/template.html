@@ -1,0 +1,78 @@
+KPI Card — Simple Metric vs Prior Period (Blink Effect) =
+
+VAR _rev = «MEASURE: current period total, numeric, not pre-formatted»
+VAR _revDisplay = IF(_rev >= 1000000, FORMAT(_rev / 1000000, "$#,0.00") & "M", FORMAT(_rev, "$#,0"))
+VAR _revVar = «MEASURE: % change vs prior period, decimal (e.g. 0.045 for +4.5%), can be blank if no prior period»
+VAR _revVarDisplay = IF(ISBLANK(_revVar), "--", FORMAT(ABS(_revVar), "0.00") & "%")
+VAR _revVarSign = IF(ISBLANK(_revVar), "", IF(_revVar >= 0, "+", "-"))
+VAR _revDelta = «MEASURE: absolute change vs prior period (same unit as _rev), numeric»
+VAR _revDeltaDisplay = IF(ABS(_revDelta) >= 1000, FORMAT(ABS(_revDelta) / 1000, "#,0.00") & "K", FORMAT(ABS(_revDelta), "#,0.00"))
+VAR _revDetailSign = IF(_revDelta >= 0, "+", "-")
+
+VAR _selectedDate = «MEASURE/EXPRESSION: MAX of the current period's date column»
+VAR _selectedMonthYear = FORMAT(_selectedDate, "mmm-yyyy")
+VAR _priorDate = EDATE(_selectedDate, -1)
+VAR _priorMonthYear = FORMAT(_priorDate, "mmm-yyyy")
+
+VAR _badgeClass = IF(_revVar >= 0, "badge-up", "badge-down")
+
+VAR _css = "
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:Segoe UI,sans-serif}
+html,body{width:100%;height:100%;overflow:hidden}
+.wrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.wrap svg{width:100%;height:100%;display:block}
+.kc{position:relative;width:100%;height:100%;border-radius:14px;overflow:hidden;border:3px solid #5C3D2E;background:#FFFFFF}
+.front,.back{position:absolute;inset:0;padding:26px 30px;display:flex;flex-direction:column}
+.front{justify-content:space-between;background:#FFFFFF;opacity:1;transition:opacity 0.15s steps(1)}
+.back{align-items:center;justify-content:center;text-align:center;background:#5C3D2E;opacity:0;transition:opacity 0.15s steps(1)}
+.kc:hover .front{opacity:0}
+.kc:hover .back{opacity:1}
+.icon-circle{position:absolute;top:24px;right:30px;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:5}
+.icon-front{background:#F5EFE6;border:1.5px solid #E8DFCF}
+.icon-back{background:#7A5240;border:1.5px solid #C4A882;position:static;margin-bottom:18px}
+.kl{font-size:14px;text-transform:uppercase;letter-spacing:1px;font-weight:600;color:#5C3D2E}
+.metric{font-size:58px;font-weight:600;color:#2C2C2C;line-height:1;margin-top:14px}
+.badge{display:inline-flex;font-size:14px;font-weight:500;padding:8px 18px;border-radius:20px}
+.badge-up{background:#E1F5EE;color:#0F6E56}
+.badge-down{background:#FAECE7;color:#993C1D}
+.bottom-row{display:flex;justify-content:space-between;align-items:center}
+.hint{font-size:11px;color:#AAA;display:flex;align-items:center;gap:4px}
+.bk-label{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;font-weight:600;color:#C4A882;margin-bottom:14px}
+.bk-value{font-size:56px;font-weight:600;color:#FFFFFF;line-height:1}
+.bk-text{font-size:15px;color:#E8DFCF;line-height:1.5;margin-top:14px}
+.bk-text strong{color:#F5F0EB;font-weight:600}
+</style>
+"
+
+VAR _hintSvg = "<svg width='12' height='12' viewBox='0 0 10 10'><path d='M2 5H8M8 5L6 3M8 5L6 7' fill='none' stroke='%23AAA' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'/></svg>"
+VAR _iconFront = "<svg width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='#5C3D2E' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'>«ICON PATH: swap for the metric's own icon, e.g. a dollar sign path»</svg>"
+VAR _iconBack = "<svg width='28' height='28' viewBox='0 0 24 24' fill='none' stroke='#F5EFE6' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'>«ICON PATH: same icon, light stroke color for dark background»</svg>"
+
+RETURN
+_css & "
+<div class='wrap'>
+<svg viewBox='0 0 460 260' preserveAspectRatio='xMidYMid meet' xmlns='http://www.w3.org/2000/svg'>
+<foreignObject x='0' y='0' width='460' height='260'>
+<div xmlns='http://www.w3.org/1999/xhtml' class='kc'>
+  <div class='front'>
+    <div class='icon-circle icon-front'>" & _iconFront & "</div>
+    <div>
+      <div class='kl'>«LABEL: metric name, e.g. Total revenue»</div>
+      <div class='metric'>" & _revDisplay & "</div>
+    </div>
+    <div class='bottom-row'>
+      <div class='badge " & _badgeClass & "'>" & _revVarSign & _revVarDisplay & " vs " & _priorMonthYear & "</div>
+      <div class='hint'>" & _hintSvg & " Hover</div>
+    </div>
+  </div>
+  <div class='back'>
+    <div class='icon-circle icon-back'>" & _iconBack & "</div>
+    <div class='bk-label'>«LABEL: back-face section tag, e.g. Revenue Detail»</div>
+    <div class='bk-value'>" & _revDetailSign & _revDeltaDisplay & "</div>
+    <div class='bk-text'>from <strong>" & _priorMonthYear & "</strong> to <strong>" & _selectedMonthYear & "</strong></div>
+  </div>
+</div>
+</foreignObject>
+</svg>
+</div>"
